@@ -8,7 +8,7 @@ import java.util.List;
  * @author Eivind Eidheim Elseth
  *
  */
-public class Bitboard {
+public class ReversiBitboard {
 	
 	public final static int BLACK = 0;
 	public final static int EMPTY = -1;
@@ -21,7 +21,7 @@ public class Bitboard {
 	private final static Long RIGHT_MASK = 72340172838076673L;
 
 	public static void main(String[] args) {
-		Bitboard board = new Bitboard();
+		ReversiBitboard board = new ReversiBitboard();
 		Coordinate e5 = new Coordinate(4, 4);
 		Coordinate e4 = new Coordinate(4, 3);
 		Coordinate e3 = new Coordinate(4, 2);
@@ -36,20 +36,20 @@ public class Bitboard {
 	/**
 	 * Constructs a board with pieces in the starting positions of reversi
 	 */
-	public Bitboard(){
+	public ReversiBitboard(){
 		this(INITIAL_POSITION_BLACK, INITIAL_POSITION_WHITE);
 	}
 
 	/**
 	 * Constructs a board with pieces in the positions given by blackPieces and whitePieces
 	 */
-	public Bitboard(Long blackPieces, Long whitePieces){
+	public ReversiBitboard(Long blackPieces, Long whitePieces){
 		this(new Long[]{blackPieces, whitePieces});
 	}
 	/**
 	 * Constructs a board with pieces in the positions given by the array
 	 */
-	public Bitboard(Long[] pieces){
+	public ReversiBitboard(Long[] pieces){
 		if(pieces.length != 2)
 			throw new IllegalArgumentException("Number of players must be 2 but was " + pieces.length);
 		this.pieces = pieces;
@@ -58,7 +58,7 @@ public class Bitboard {
 	/**
 	 * @return the blackPieces
 	 */
-	public Long blackPieces() {
+	private Long blackPieces() {
 		return pieces[BLACK];
 	}
 	
@@ -160,20 +160,6 @@ public class Bitboard {
 		return false;
 	}
 
-	/**
-	 * @param blackPieces the blackPieces to set
-	 */
-	public void setBlackPieces(Long blackPieces) {
-		this.pieces[BLACK] = blackPieces;
-	}
-
-	/**
-	 * @param whitePieces the whitePieces to set
-	 */
-	public void setWhitePieces(Long whitePieces) {
-		this.pieces[WHITE] = whitePieces;
-	}
-
 	public String toString(){
 		String s;
 		String white = longToString(whitePieces());
@@ -186,9 +172,17 @@ public class Bitboard {
 	/**
 	 * @return the whitePieces
 	 */
-	public Long whitePieces() {
+	private Long whitePieces() {
 		return pieces[WHITE];
 	}
+	
+	
+	/**
+	 * 
+	 * @param white
+	 * @param black
+	 * @return
+	 */
 	
 	private String combineBoards(String white, String black) {
 		StringBuilder s = new StringBuilder(white.length());

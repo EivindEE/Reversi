@@ -2,10 +2,8 @@ package com.eivind.reversi.game;
 
 import java.util.ArrayList;
 
-import javax.print.attribute.standard.MediaSize.Other;
-
 /**
- * Encapsulates a position on a gameboard via a Cartesian coordinate
+ * Encapsulates a position on a game board via a Cartesian coordinate
  * 
  * @author Eivind Eidheim Elseth
  *
