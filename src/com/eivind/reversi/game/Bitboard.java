@@ -22,48 +22,12 @@ public class Bitboard {
 
 	public static void main(String[] args) {
 		Bitboard board = new Bitboard();
-		Coordinate e6 = new Coordinate(4, 5);
-		Coordinate d6 = new Coordinate(3, 5);
-		Coordinate c4 = new Coordinate(2, 3);
-		Coordinate d3 = new Coordinate(3, 2);
-		Coordinate c6 = new Coordinate(2, 5);
-		Coordinate f6 = new Coordinate(5, 5);
-		Coordinate f4 = new Coordinate(5, 3);
-		Coordinate b6 = new Coordinate(1, 5);
+		Coordinate e5 = new Coordinate(4, 4);
+		Coordinate e4 = new Coordinate(4, 3);
+		Coordinate e3 = new Coordinate(4, 2);
+		System.out.print("E5 is white: " + (board.getTile(e5) == WHITE) + ", E4 is black: " + (board.getTile(e4) == BLACK)
+				+ ", E3 is empty: " + (board.getTile(e3) == EMPTY) + '\n');
 		System.out.println(board);
-		
-		board.makeMove(BLACK, e6);
-		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
-		System.out.println(board);
-		
-		board.makeMove(WHITE, d6);
-		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
-		System.out.println(board);
-		
-		board.makeMove(BLACK, c4);
-		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
-		System.out.println(board);
-		
-		board.makeMove(WHITE, d3);
-		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
-		System.out.println(board);
-		
-		board.makeMove(BLACK, c6);
-		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
-		System.out.println(board);
-		
-		board.makeMove(WHITE, f6);
-		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
-		System.out.println(board);
-		
-		board.makeMove(BLACK, f4);
-		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
-		System.out.println(board);
-		
-		board.makeMove(WHITE, b6);
-		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
-		System.out.println(board);
-		
 	}
 	
 	
@@ -98,57 +62,18 @@ public class Bitboard {
 		return pieces[BLACK];
 	}
 	
-	/**
-	 * Returns true if the player with the given index has legal moves
-	 * Should be called with either the static BLACK or WHITE
-	 * @param color
-	 * @return
-	 */
-	public boolean hasLegalMoves(int color) {
-		return getLegalMoves(color).size() > 0;
-	}
-	
-	public int getTile(Coordinate c){
-		Long position = getLong(c);
-		if((position & pieces[BLACK]) == position)
-			return BLACK;
-		else if((position & pieces[WHITE]) == position)
-			return WHITE;
-		else if((position & emptyBoard()) == position)
-			return EMPTY;
-		else
-			throw new IllegalArgumentException("Coordinate " + c + "does not appear  on the board");
-	}
-	
-	/**
-	 * Returns true if the tile at c is empty
-	 * @param c
-	 * @return
-	 */
-	public boolean isEmpty(Coordinate c){
-		Long position = getLong(c);
-		return (position & emptyBoard()) == position;
-	}
-	/**
-	 * Returns true if none of the players have legal moves
-	 * @return
-	 */
-	public boolean isGameComplete(){
-		return !hasLegalMoves(BLACK) && !hasLegalMoves(WHITE);
-	}
-
-	/**
-	 * @param blackPieces the blackPieces to set
-	 */
-	public void setBlackPieces(Long blackPieces) {
-		this.pieces[BLACK] = blackPieces;
-	}
-
-	/**
-	 * @param whitePieces the whitePieces to set
-	 */
-	public void setWhitePieces(Long whitePieces) {
-		this.pieces[WHITE] = whitePieces;
+	public String formatSingleLong(Long l){
+		String boardString = longToString(l);
+		String s = "";
+		int lineLength = 16;
+		int beginIndex = 0;
+		int endIndex = lineLength;
+		while(endIndex <= boardString.length()){
+			s += boardString.substring(beginIndex, endIndex) + '\n';
+			beginIndex = endIndex;
+			endIndex += lineLength;
+		}
+		return s; 
 	}
 	
 	/**
@@ -166,6 +91,88 @@ public class Bitboard {
 		}
 		return score;
 	}
+	
+	/**
+	 * Return the int correspondig to the class constant of the content of the tile
+	 * Should be used in conjunction with the class constants
+	 * @param c
+	 * @return
+	 */
+	public int getTile(Coordinate c){
+		Long position = getLong(c);
+		if((position & pieces[BLACK]) == position)
+			return BLACK;
+		else if((position & pieces[WHITE]) == position)
+			return WHITE;
+		else if((position & emptyBoard()) == position)
+			return EMPTY;
+		else
+			throw new IllegalArgumentException("Coordinate " + c + "does not appear  on the board");
+	}
+	/**
+	 * Returns true if the player with the given index has legal moves
+	 * Should be called with either the static BLACK or WHITE
+	 * @param color
+	 * @return
+	 */
+	public boolean hasLegalMoves(int color) {
+		return getLegalMoves(color).size() > 0;
+	}
+
+	/**
+	 * Returns true if the tile at c is empty
+	 * @param c
+	 * @return
+	 */
+	public boolean isEmpty(Coordinate c){
+		Long position = getLong(c);
+		return (position & emptyBoard()) == position;
+	}
+
+	/**
+	 * Returns true if none of the players have legal moves
+	 * @return
+	 */
+	public boolean isGameComplete(){
+		return !hasLegalMoves(BLACK) && !hasLegalMoves(WHITE);
+	}
+	
+	/**
+	 * Places a piece at coordinate, and turns appropriate pieces.
+	 * Returns true iff move is legal and completed.
+	 * @param color
+	 * @param coordinate
+	 * @return
+	 */
+	public boolean makeMove(int color, Coordinate coordinate) {
+		if(isLegalMove(color, coordinate)){
+			List<Coordinate> piecesToTurn = new LinkedList<Coordinate>();
+			piecesToTurn.add(coordinate);
+			List<Coordinate> endPoints = getEndPoints(color, coordinate);
+			piecesToTurn.addAll(endPoints);
+			for(Coordinate c : endPoints)
+				piecesToTurn.addAll(coordinate.between(c));
+			for(Coordinate c : piecesToTurn){
+				setPieceAtPosition(color, getLong(c));
+			}
+			return true;
+		}	
+		return false;
+	}
+
+	/**
+	 * @param blackPieces the blackPieces to set
+	 */
+	public void setBlackPieces(Long blackPieces) {
+		this.pieces[BLACK] = blackPieces;
+	}
+
+	/**
+	 * @param whitePieces the whitePieces to set
+	 */
+	public void setWhitePieces(Long whitePieces) {
+		this.pieces[WHITE] = whitePieces;
+	}
 
 	public String toString(){
 		String s;
@@ -182,7 +189,7 @@ public class Bitboard {
 	public Long whitePieces() {
 		return pieces[WHITE];
 	}
-
+	
 	private String combineBoards(String white, String black) {
 		StringBuilder s = new StringBuilder(white.length());
 		for(int i = 0; i < white.length() && i < black.length(); i++)
@@ -219,20 +226,6 @@ public class Bitboard {
 		return new Long(~blackPieces() & ~whitePieces());
 	}
 
-	public String formatSingleLong(Long l){
-		String boardString = longToString(l);
-		String s = "";
-		int lineLength = 16;
-		int beginIndex = 0;
-		int endIndex = lineLength;
-		while(endIndex <= boardString.length()){
-			s += boardString.substring(beginIndex, endIndex) + '\n';
-			beginIndex = endIndex;
-			endIndex += lineLength;
-		}
-		return s; 
-	}
-	
 	private Coordinate getCoordinate(Long position){
 		Coordinate theCoordinate = null;
 		Long L = 1L;
@@ -258,7 +251,7 @@ public class Bitboard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-
+	
 	private List<Coordinate> getEndPointDownLeft(int color,Long startPoint) {
 		Long potentialEndPoint = shiftDownLeft(startPoint);
 		while(potentialEndPoint != 0){	
@@ -269,7 +262,7 @@ public class Bitboard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-	
+
 	private List<Coordinate> getEndPointDownRight(int color,Long startPoint) {
 		Long potentialEndPoint = shiftDownRight(startPoint);
 		while(potentialEndPoint != 0){	
@@ -280,7 +273,7 @@ public class Bitboard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-
+	
 	private List<Coordinate> getEndPointLeft(int color,Long startPoint) {
  		Long potentialEndPoint = shiftLeft(startPoint);
 		while(potentialEndPoint != 0){	
@@ -291,7 +284,7 @@ public class Bitboard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-	
+
 	private List<Coordinate> getEndPointRight(int color,Long startPoint) {
 		Long potentialEndPoint = shiftRight(startPoint);
 		while(potentialEndPoint != 0){	
@@ -302,7 +295,6 @@ public class Bitboard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-
 	private List<Coordinate> getEndPoints(int color, Coordinate coordinate) {
 		List<Coordinate> endPoints = new LinkedList<Coordinate>();
 		Long startPoint = getLong(coordinate);
@@ -319,6 +311,7 @@ public class Bitboard {
 
 		return endPoints;
 	}
+	
 	private List<Coordinate> getEndPointUp(int color, Long startPoint) {
  		Long potentialEndPoint = shiftUp(startPoint);
 		while(potentialEndPoint != 0){	
@@ -329,7 +322,6 @@ public class Bitboard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-	
 	private List<Coordinate> getEndPointUpLeft(int color,Long startPoint) {
 		Long potentialEndPoint = shiftUpLeft(startPoint);
 		while(potentialEndPoint != 0){	
@@ -340,6 +332,8 @@ public class Bitboard {
 		}
 		return new LinkedList<Coordinate>();
 	}
+
+
 	private List<Coordinate> getEndPointUpRight(int color, Long startPoint) {
  		Long potentialEndPoint = shiftUpRight(startPoint);
 		while(potentialEndPoint != 0){
@@ -350,8 +344,7 @@ public class Bitboard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-
-
+	
 	private List<Coordinate> getLegalMoves(int player) {
 		List<Coordinate> legalMoves = new LinkedList<Coordinate>();
 		legalMoves.addAll(movesUpLeft(player));
@@ -365,13 +358,14 @@ public class Bitboard {
 		return legalMoves;
 		
 	}
-	
+
 	private Long getLong(Coordinate c){
 		long l = 1L;
 		l = l << 7 - c.getX();
 		l = l << (8*c.getY());
 		return l;
 	}
+
 
 	private List<Coordinate> getLongCoordinates(Long position){
 		Long workingPosition = new Long(position);
@@ -384,8 +378,6 @@ public class Bitboard {
 		}
 		return coordinates;
 	}
-
-
 	private boolean isLegalMove(int color, Coordinate coordinate) {
 		for(Coordinate c : getLegalMoves(color)){
 			if(c.equals(coordinate))
@@ -393,12 +385,13 @@ public class Bitboard {
 		}
 		return false;
 	}
+
 	private List<Coordinate> longToCoordinateList(Long l) {
 		List<Coordinate> coordinateList = new LinkedList<Coordinate>();
 		coordinateList.add(getCoordinate(l));
 		return coordinateList;
 	}
-
+	
 	private String longToString(Long l){
 		StringBuilder s = new StringBuilder(128);
 		int leadingZeros = Long.numberOfLeadingZeros(l);
@@ -411,22 +404,7 @@ public class Bitboard {
 		for(int i = 0; i < binString.length(); i++){
 			s.append(binString.charAt(i) + " ");
 		}
-
 		return s.toString();
-	}
-	
-	private void makeMove(int color, Coordinate coordinate) {
-		if(isLegalMove(color, coordinate)){
-			List<Coordinate> piecesToTurn = new LinkedList<Coordinate>();
-			piecesToTurn.add(coordinate);
-			List<Coordinate> endPoints = getEndPoints(color, coordinate);
-			piecesToTurn.addAll(endPoints);
-			for(Coordinate c : endPoints)
-				piecesToTurn.addAll(coordinate.between(c));
-			for(Coordinate c : piecesToTurn){
-				setPieceAtPosition(color, getLong(c));
-			}
-		}	
 	}
 
 
