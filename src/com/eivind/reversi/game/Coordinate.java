@@ -2,6 +2,8 @@ package com.eivind.reversi.game;
 
 import java.util.ArrayList;
 
+import javax.print.attribute.standard.MediaSize.Other;
+
 /**
  * Encapsulates a position on a gameboard via a Cartesian coordinate
  * 
@@ -34,12 +36,18 @@ public class Coordinate {
 	}
 	
 	/**
-	 * To Coordinates are considered equal if they occupy the same space
+	 * Equal if the object is of the type coordinate, and occupy the same space
 	 * @param c
 	 * @return true if equal
 	 */
-	public boolean equals(Coordinate c){
-		return c.x == this.x && c.y == this.y;
+	@Override
+	public boolean equals(Object c){
+		if(c instanceof Coordinate){
+			Coordinate other = (Coordinate) c;
+			return other.x == this.x && other.y == this.y;
+		}
+		else
+			return false;
 	}
 	
 	/**
