@@ -1,7 +1,5 @@
 package com.eivind.reversi.game;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -68,6 +66,7 @@ public class Bitboard {
 		
 	}
 	
+	
 	private Long[] pieces;
 
 	/**
@@ -109,6 +108,18 @@ public class Bitboard {
 		return getLegalMoves(color).size() > 0;
 	}
 	
+	public int getTile(Coordinate c){
+		Long position = getLong(c);
+		if((position & pieces[BLACK]) == position)
+			return BLACK;
+		else if((position & pieces[WHITE]) == position)
+			return WHITE;
+		else if((position & emptyBoard()) == position)
+			return EMPTY;
+		else
+			throw new IllegalArgumentException("Coordinate " + c + "does not appear  on the board");
+	}
+	
 	/**
 	 * Returns true if the tile at c is empty
 	 * @param c
@@ -140,6 +151,12 @@ public class Bitboard {
 		this.pieces[WHITE] = whitePieces;
 	}
 	
+	/**
+	 * Returns the score of the player with the given color
+	 * Should be called with one of the class constants.
+	 * @param color
+	 * @return
+	 */
 	public int getScore(int color){
 		int score = 0;
 		Long remainingPieces = new Long(pieces[color]);
@@ -202,7 +219,7 @@ public class Bitboard {
 		return new Long(~blackPieces() & ~whitePieces());
 	}
 
-	private String formatSingleLong(Long l){
+	public String formatSingleLong(Long l){
 		String boardString = longToString(l);
 		String s = "";
 		int lineLength = 16;
@@ -287,7 +304,7 @@ public class Bitboard {
 	}
 
 	private List<Coordinate> getEndPoints(int color, Coordinate coordinate) {
-		ArrayList<Coordinate> endPoints = new ArrayList<Coordinate>();
+		List<Coordinate> endPoints = new LinkedList<Coordinate>();
 		Long startPoint = getLong(coordinate);
 
 		// Adds the potential endpoints from all possible directions
@@ -336,7 +353,7 @@ public class Bitboard {
 
 
 	private List<Coordinate> getLegalMoves(int player) {
-		ArrayList<Coordinate> legalMoves = new ArrayList<Coordinate>();
+		List<Coordinate> legalMoves = new LinkedList<Coordinate>();
 		legalMoves.addAll(movesUpLeft(player));
 		legalMoves.addAll(movesUp(player));
 		legalMoves.addAll(movesUpRight(player));
@@ -356,9 +373,9 @@ public class Bitboard {
 		return l;
 	}
 
-	private LinkedList<Coordinate> getLongCoordinates(Long position){
+	private List<Coordinate> getLongCoordinates(Long position){
 		Long workingPosition = new Long(position);
-		LinkedList<Coordinate> coordinates = new LinkedList<Coordinate>();
+		List<Coordinate> coordinates = new LinkedList<Coordinate>();
 		long highestOneBit = Long.highestOneBit(workingPosition);
 		while(highestOneBit != 0){
 			coordinates.add(getCoordinate(highestOneBit));
@@ -376,8 +393,8 @@ public class Bitboard {
 		}
 		return false;
 	}
-	private LinkedList<Coordinate> longToCoordinateList(Long l) {
-		LinkedList<Coordinate> coordinateList = new LinkedList<Coordinate>();
+	private List<Coordinate> longToCoordinateList(Long l) {
+		List<Coordinate> coordinateList = new LinkedList<Coordinate>();
 		coordinateList.add(getCoordinate(l));
 		return coordinateList;
 	}
@@ -399,11 +416,10 @@ public class Bitboard {
 	}
 	
 	private void makeMove(int color, Coordinate coordinate) {
-
 		if(isLegalMove(color, coordinate)){
-			Collection<Coordinate> piecesToTurn = new ArrayList<Coordinate>();
+			List<Coordinate> piecesToTurn = new LinkedList<Coordinate>();
 			piecesToTurn.add(coordinate);
-			Collection<Coordinate> endPoints = getEndPoints(color, coordinate);
+			List<Coordinate> endPoints = getEndPoints(color, coordinate);
 			piecesToTurn.addAll(endPoints);
 			for(Coordinate c : endPoints)
 				piecesToTurn.addAll(coordinate.between(c));
@@ -414,8 +430,8 @@ public class Bitboard {
 	}
 
 
-	private ArrayList<Coordinate> movesDown(int player) {
-		ArrayList<Coordinate> downMoves = new ArrayList<Coordinate>(); 
+	private List<Coordinate> movesDown(int player) {
+		List<Coordinate> downMoves = new LinkedList<Coordinate>(); 
 		int otherPlayer = 1 - player;
 		Long potentialMoves = shiftDown(pieces[player]) & pieces[otherPlayer];
 		Long emptyBoard = emptyBoard();
@@ -428,8 +444,8 @@ public class Bitboard {
 	}
 
 
-	private ArrayList<Coordinate> movesDownLeft(int player) {
-		ArrayList<Coordinate> downLeftMoves = new ArrayList<Coordinate>(); 
+	private List<Coordinate> movesDownLeft(int player) {
+		List<Coordinate> downLeftMoves = new LinkedList<Coordinate>(); 
 		int otherPlayer = 1 - player;
 		Long potentialMoves = shiftDownLeft(pieces[player]) & pieces[otherPlayer];
 		Long emptyBoard = emptyBoard();
@@ -441,8 +457,8 @@ public class Bitboard {
 		return downLeftMoves;
 	}
 
-	private ArrayList<Coordinate> movesDownRight(int player) {
-		ArrayList<Coordinate> downRightMoves = new ArrayList<Coordinate>(); 
+	private List<Coordinate> movesDownRight(int player) {
+		LinkedList<Coordinate> downRightMoves = new LinkedList<Coordinate>(); 
 		int otherPlayer = 1 - player;
 		Long potentialMoves = shiftDownRight(pieces[player]) & pieces[otherPlayer];
 		Long emptyBoard = emptyBoard();
@@ -454,8 +470,8 @@ public class Bitboard {
 		return downRightMoves;
 	}
 
-	private ArrayList<Coordinate> movesLeft(int player) {
-		ArrayList<Coordinate> leftMoves = new ArrayList<Coordinate>(); 
+	private List<Coordinate> movesLeft(int player) {
+		List<Coordinate> leftMoves = new LinkedList<Coordinate>(); 
 		int otherPlayer = 1 - player;
 		Long potentialMoves = shiftLeft(pieces[player]) & pieces[otherPlayer];
 		Long emptyBoard = emptyBoard();
@@ -467,8 +483,8 @@ public class Bitboard {
 		return leftMoves;
 	}
 
-	private ArrayList<Coordinate> movesRight(int player) {
-		ArrayList<Coordinate> rightMoves = new ArrayList<Coordinate>(); 
+	private List<Coordinate> movesRight(int player) {
+		List<Coordinate> rightMoves = new LinkedList<Coordinate>(); 
 		int otherPlayer = 1 - player;
 		Long potentialMoves = shiftRight(pieces[player]) & pieces[otherPlayer];
 		Long emptyBoard = emptyBoard();
@@ -480,8 +496,8 @@ public class Bitboard {
 		return rightMoves;
 	}
 	
-	private ArrayList<Coordinate> movesUp(int player) {
-		ArrayList<Coordinate> upMoves = new ArrayList<Coordinate>(); 
+	private List<Coordinate> movesUp(int player) {
+		List<Coordinate> upMoves = new LinkedList<Coordinate>(); 
 		int otherPlayer = 1 - player;
 		Long potentialMoves = shiftUp(pieces[player]) & pieces[otherPlayer];
 		Long emptyBoard = emptyBoard();
@@ -493,8 +509,8 @@ public class Bitboard {
 		return upMoves;
 	}
 	
-	private ArrayList<Coordinate> movesUpLeft(int player) {
-		ArrayList<Coordinate> upLeftMoves = new ArrayList<Coordinate>(); 
+	private List<Coordinate> movesUpLeft(int player) {
+		List<Coordinate> upLeftMoves = new LinkedList<Coordinate>(); 
 		int otherPlayer = 1 - player;
 		Long potentialMoves = shiftUpLeft(pieces[player]) & pieces[otherPlayer];
 		Long emptyBoard = emptyBoard();
@@ -506,8 +522,8 @@ public class Bitboard {
 		return upLeftMoves;
 	}
 	
-	private ArrayList<Coordinate> movesUpRight(int player) {
-		ArrayList<Coordinate> upRightMoves = new ArrayList<Coordinate>(); 
+	private List<Coordinate> movesUpRight(int player) {
+		List<Coordinate> upRightMoves = new LinkedList<Coordinate>(); 
 		int otherPlayer = 1 - player;
 		Long potentialMoves = shiftUpRight(pieces[player]) & pieces[otherPlayer];
 		Long emptyBoard = emptyBoard();
