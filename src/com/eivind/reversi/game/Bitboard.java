@@ -1,8 +1,9 @@
 package com.eivind.reversi.game;
 
-import java.io.ObjectInputStream.GetField;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * This class represents a 8x8 Reversi board
@@ -32,25 +33,39 @@ public class Bitboard {
 		Coordinate f4 = new Coordinate(5, 3);
 		Coordinate b6 = new Coordinate(1, 5);
 		System.out.println(board);
-		System.out.println("Is tile empty " + board.isEmpty(e6));
+		
 		board.makeMove(BLACK, e6);
-		System.out.println("Is tile empty " + board.isEmpty(e6));
+		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
 		System.out.println(board);
-		System.out.println("Is tile empty " + board.isEmpty(d6));
+		
 		board.makeMove(WHITE, d6);
+		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
 		System.out.println(board);
+		
 		board.makeMove(BLACK, c4);
+		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
 		System.out.println(board);
+		
 		board.makeMove(WHITE, d3);
+		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
 		System.out.println(board);
+		
 		board.makeMove(BLACK, c6);
+		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
 		System.out.println(board);
+		
 		board.makeMove(WHITE, f6);
+		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
 		System.out.println(board);
+		
 		board.makeMove(BLACK, f4);
+		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
 		System.out.println(board);
+		
 		board.makeMove(WHITE, b6);
+		System.out.println("Black score: " + board.getScore(BLACK) + ", White score: " + board.getScore(WHITE));
 		System.out.println(board);
+		
 	}
 	
 	private Long[] pieces;
@@ -123,6 +138,16 @@ public class Bitboard {
 	 */
 	public void setWhitePieces(Long whitePieces) {
 		this.pieces[WHITE] = whitePieces;
+	}
+	
+	public int getScore(int color){
+		int score = 0;
+		Long remainingPieces = new Long(pieces[color]);
+		while(remainingPieces != 0L){
+		 score++;
+		 remainingPieces ^= Long.highestOneBit(remainingPieces);
+		}
+		return score;
 	}
 
 	public String toString(){
@@ -206,7 +231,7 @@ public class Bitboard {
 		throw new IllegalArgumentException("Long " + position + "does not map to a coordinate on the BitBoard");
 	}
 
-	private ArrayList<Coordinate> getEndPointDown(int color, Long startPoint) {
+	private List<Coordinate> getEndPointDown(int color, Long startPoint) {
  		Long potentialEndPoint = shiftDown(startPoint);
 		while(potentialEndPoint != 0){	
 			if(validEndPoint(color,potentialEndPoint)){
@@ -214,10 +239,10 @@ public class Bitboard {
 			}
 			potentialEndPoint = shiftDown(potentialEndPoint);
 		}
-		return new ArrayList<Coordinate>();
+		return new LinkedList<Coordinate>();
 	}
 
-	private ArrayList<Coordinate> getEndPointDownLeft(int color,Long startPoint) {
+	private List<Coordinate> getEndPointDownLeft(int color,Long startPoint) {
 		Long potentialEndPoint = shiftDownLeft(startPoint);
 		while(potentialEndPoint != 0){	
 			if(validEndPoint(color,potentialEndPoint)){
@@ -225,10 +250,10 @@ public class Bitboard {
 			}
 			potentialEndPoint = shiftDownLeft(potentialEndPoint);
 		}
-		return new ArrayList<Coordinate>();
+		return new LinkedList<Coordinate>();
 	}
 	
-	private ArrayList<Coordinate> getEndPointDownRight(int color,Long startPoint) {
+	private List<Coordinate> getEndPointDownRight(int color,Long startPoint) {
 		Long potentialEndPoint = shiftDownRight(startPoint);
 		while(potentialEndPoint != 0){	
 			if(validEndPoint(color,potentialEndPoint)){
@@ -236,10 +261,10 @@ public class Bitboard {
 			}
 			potentialEndPoint = shiftDownRight(potentialEndPoint);
 		}
-		return new ArrayList<Coordinate>();
+		return new LinkedList<Coordinate>();
 	}
 
-	private ArrayList<Coordinate> getEndPointLeft(int color,Long startPoint) {
+	private List<Coordinate> getEndPointLeft(int color,Long startPoint) {
  		Long potentialEndPoint = shiftLeft(startPoint);
 		while(potentialEndPoint != 0){	
 			if(validEndPoint(color,potentialEndPoint)){
@@ -247,10 +272,10 @@ public class Bitboard {
 			}
 			potentialEndPoint = shiftLeft(potentialEndPoint);
 		}
-		return new ArrayList<Coordinate>();
+		return new LinkedList<Coordinate>();
 	}
 	
-	private ArrayList<Coordinate> getEndPointRight(int color,Long startPoint) {
+	private List<Coordinate> getEndPointRight(int color,Long startPoint) {
 		Long potentialEndPoint = shiftRight(startPoint);
 		while(potentialEndPoint != 0){	
 			if(validEndPoint(color,potentialEndPoint)){
@@ -258,10 +283,10 @@ public class Bitboard {
 			}
 			potentialEndPoint = shiftRight(potentialEndPoint);
 		}
-		return new ArrayList<Coordinate>();
+		return new LinkedList<Coordinate>();
 	}
 
-	private ArrayList<Coordinate> getEndPoints(int color, Coordinate coordinate) {
+	private List<Coordinate> getEndPoints(int color, Coordinate coordinate) {
 		ArrayList<Coordinate> endPoints = new ArrayList<Coordinate>();
 		Long startPoint = getLong(coordinate);
 
@@ -277,7 +302,7 @@ public class Bitboard {
 
 		return endPoints;
 	}
-	private ArrayList<Coordinate> getEndPointUp(int color, Long startPoint) {
+	private List<Coordinate> getEndPointUp(int color, Long startPoint) {
  		Long potentialEndPoint = shiftUp(startPoint);
 		while(potentialEndPoint != 0){	
 			if(validEndPoint(color,potentialEndPoint)){
@@ -285,10 +310,10 @@ public class Bitboard {
 			}
 			potentialEndPoint = shiftUp(potentialEndPoint);
 		}
-		return new ArrayList<Coordinate>();
+		return new LinkedList<Coordinate>();
 	}
 	
-	private ArrayList<Coordinate> getEndPointUpLeft(int color,Long startPoint) {
+	private List<Coordinate> getEndPointUpLeft(int color,Long startPoint) {
 		Long potentialEndPoint = shiftUpLeft(startPoint);
 		while(potentialEndPoint != 0){	
 			if(validEndPoint(color,potentialEndPoint)){
@@ -296,9 +321,9 @@ public class Bitboard {
 			}
 			potentialEndPoint = shiftUpLeft(potentialEndPoint);
 		}
-		return new ArrayList<Coordinate>();
+		return new LinkedList<Coordinate>();
 	}
-	private ArrayList<Coordinate> getEndPointUpRight(int color, Long startPoint) {
+	private List<Coordinate> getEndPointUpRight(int color, Long startPoint) {
  		Long potentialEndPoint = shiftUpRight(startPoint);
 		while(potentialEndPoint != 0){
 			if(validEndPoint(color,potentialEndPoint)){
@@ -306,11 +331,11 @@ public class Bitboard {
 			}
 			potentialEndPoint = shiftUpRight(potentialEndPoint);
 		}
-		return new ArrayList<Coordinate>();
+		return new LinkedList<Coordinate>();
 	}
 
 
-	private ArrayList<Coordinate> getLegalMoves(int player) {
+	private List<Coordinate> getLegalMoves(int player) {
 		ArrayList<Coordinate> legalMoves = new ArrayList<Coordinate>();
 		legalMoves.addAll(movesUpLeft(player));
 		legalMoves.addAll(movesUp(player));
@@ -331,9 +356,9 @@ public class Bitboard {
 		return l;
 	}
 
-	private ArrayList<Coordinate> getLongCoordinates(Long position){
+	private LinkedList<Coordinate> getLongCoordinates(Long position){
 		Long workingPosition = new Long(position);
-		ArrayList<Coordinate> coordinates = new ArrayList<Coordinate>();
+		LinkedList<Coordinate> coordinates = new LinkedList<Coordinate>();
 		long highestOneBit = Long.highestOneBit(workingPosition);
 		while(highestOneBit != 0){
 			coordinates.add(getCoordinate(highestOneBit));
@@ -351,8 +376,8 @@ public class Bitboard {
 		}
 		return false;
 	}
-	private ArrayList<Coordinate> longToCoordinateList(Long l) {
-		ArrayList<Coordinate> coordinateList = new ArrayList<Coordinate>();
+	private LinkedList<Coordinate> longToCoordinateList(Long l) {
+		LinkedList<Coordinate> coordinateList = new LinkedList<Coordinate>();
 		coordinateList.add(getCoordinate(l));
 		return coordinateList;
 	}
@@ -376,17 +401,16 @@ public class Bitboard {
 	private void makeMove(int color, Coordinate coordinate) {
 
 		if(isLegalMove(color, coordinate)){
-			ArrayList<Coordinate> piecesToTurn = new ArrayList<Coordinate>();
+			Collection<Coordinate> piecesToTurn = new ArrayList<Coordinate>();
 			piecesToTurn.add(coordinate);
-			ArrayList<Coordinate> endPoints = getEndPoints(color, coordinate);
+			Collection<Coordinate> endPoints = getEndPoints(color, coordinate);
 			piecesToTurn.addAll(endPoints);
 			for(Coordinate c : endPoints)
 				piecesToTurn.addAll(coordinate.between(c));
 			for(Coordinate c : piecesToTurn){
 				setPieceAtPosition(color, getLong(c));
 			}
-		}
-		
+		}	
 	}
 
 
