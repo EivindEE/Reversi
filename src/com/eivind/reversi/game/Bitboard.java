@@ -1,8 +1,8 @@
 package com.eivind.reversi.game;
 
-
-import java.security.InvalidParameterException;
+import java.io.ObjectInputStream.GetField;
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * This class represents a 8x8 Reversi board
@@ -13,6 +13,8 @@ public class Bitboard {
 	
 	public final static int BLACK = 0;
 	public final static int WHITE = 1;
+	public final static int EMPTY = -1;
+	
 	private final static Long INITIAL_POSITION_BLACK = 68853694464L;
 	private final static Long INITIAL_POSITION_WHITE = 34628173824L;
 	
@@ -21,12 +23,31 @@ public class Bitboard {
 
 	public static void main(String[] args) {
 		Bitboard board = new Bitboard();
+		Coordinate e6 = new Coordinate(4, 5);
 		Coordinate d6 = new Coordinate(3, 5);
-		System.out.println("d6:" + d6);
-		board.makeMove(BLACK,d6);
+		Coordinate c4 = new Coordinate(2, 3);
+		Coordinate d3 = new Coordinate(3, 2);
+		Coordinate c6 = new Coordinate(2, 5);
+		Coordinate f6 = new Coordinate(5, 5);
+		Coordinate f4 = new Coordinate(5, 3);
+		Coordinate b6 = new Coordinate(1, 5);
 		System.out.println(board);
-	
-		
+		board.makeMove(BLACK, e6);
+		System.out.println(board);
+		board.makeMove(WHITE, d6);
+		System.out.println(board);
+		board.makeMove(BLACK, c4);
+		System.out.println(board);
+		board.makeMove(WHITE, d3);
+		System.out.println(board);
+		board.makeMove(BLACK, c6);
+		System.out.println(board);
+		board.makeMove(WHITE, f6);
+		System.out.println(board);
+		board.makeMove(BLACK, f4);
+		System.out.println(board);
+		board.makeMove(WHITE, b6);
+		System.out.println(board);
 	}
 	
 	private void makeMove(int color, Coordinate coordinate) {
@@ -34,88 +55,130 @@ public class Bitboard {
 		if(isLegalMove(color, coordinate)){
 			ArrayList<Coordinate> piecesToTurn = new ArrayList<Coordinate>();
 			piecesToTurn.add(coordinate);
-			System.out.println("Size before getEndPoints: " + piecesToTurn.size());
 			ArrayList<Coordinate> endPoints = getEndPoints(color, coordinate);
-			
 			piecesToTurn.addAll(endPoints);
-			System.out.println("Size after getEndPoints: " + piecesToTurn.size());
 			for(Coordinate c : endPoints)
 				piecesToTurn.addAll(coordinate.between(c));
 			for(Coordinate c : piecesToTurn){
-				setPieceAtPosition(color, getLongFromCoordinate(c));
+				setPieceAtPosition(color, getLong(c));
 			}
 		}
 		
 	}
 
 	private ArrayList<Coordinate> getEndPoints(int color, Coordinate coordinate) {
-		int otherColor = 1 - color;
 		ArrayList<Coordinate> endPoints = new ArrayList<Coordinate>();
-		Long potentialEndPoint = getLongFromCoordinate(coordinate);
-		while(potentialEndPoint != 0){
-			if((potentialEndPoint & emptyBoard()) == potentialEndPoint){
-				endPoints.add(getCoordinate(potentialEndPoint));
-				break;
+		Long startPoint = getLong(coordinate);
+
+		// Adds the potential endpoints from all possible directions
+		endPoints.addAll(getEndPointUpLeft(color,startPoint));
+		endPoints.addAll(getEndPointUp(color,startPoint));
+		endPoints.addAll(getEndPointUpRight(color,startPoint));
+		endPoints.addAll(getEndPointLeft(color,startPoint));
+		endPoints.addAll(getEndPointRight(color,startPoint));
+		endPoints.addAll(getEndPointDownLeft(color,startPoint));
+		endPoints.addAll(getEndPointDown(color,startPoint));
+		endPoints.addAll(getEndPointDownRight(color,startPoint));
+
+		return endPoints;
+	}
+
+	private ArrayList<Coordinate> getEndPointDownRight(int color,Long startPoint) {
+		Long potentialEndPoint = shiftDownRight(startPoint);
+		while(potentialEndPoint != 0){	
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
 			}
-			potentialEndPoint = shiftUpRight(potentialEndPoint);
+			potentialEndPoint = shiftDownRight(potentialEndPoint);
 		}
-		potentialEndPoint = getLongFromCoordinate(coordinate);
-		while(potentialEndPoint != 0){
-			if((potentialEndPoint & emptyBoard()) == potentialEndPoint){
-				endPoints.add(getCoordinate(potentialEndPoint));
-				break;
-			}
-			potentialEndPoint = shiftUp(potentialEndPoint);
-		}
-		potentialEndPoint = getLongFromCoordinate(coordinate);
-		while(potentialEndPoint != 0){
-			if((potentialEndPoint & emptyBoard()) == potentialEndPoint){
-				endPoints.add(getCoordinate(potentialEndPoint));
-				break;
-			}
-			potentialEndPoint = shiftUpLeft(potentialEndPoint);
-		}
-		potentialEndPoint = getLongFromCoordinate(coordinate);
-		while(potentialEndPoint != 0){
-			if((potentialEndPoint & emptyBoard()) == potentialEndPoint){
-				endPoints.add(getCoordinate(potentialEndPoint));
-				break;
-			}
-			potentialEndPoint = shiftLeft(potentialEndPoint);
-		}
-		potentialEndPoint = getLongFromCoordinate(coordinate);
-		while(potentialEndPoint != 0){
-			if((potentialEndPoint & emptyBoard()) == potentialEndPoint){
-				endPoints.add(getCoordinate(potentialEndPoint));
-				break;
-			}
-			potentialEndPoint = shiftRight(potentialEndPoint);
-		}
-		potentialEndPoint = getLongFromCoordinate(coordinate);
-		while(potentialEndPoint != 0){
-			if((potentialEndPoint & emptyBoard()) == potentialEndPoint){
-				endPoints.add(getCoordinate(potentialEndPoint));
-				break;
+		return new ArrayList<Coordinate>();
+	}
+
+	private boolean validEndPoint(int color, Long potentialEndPoint) {
+		return (potentialEndPoint & pieces[color]) == potentialEndPoint;
+	}
+
+	private ArrayList<Coordinate> getEndPointDownLeft(int color,Long startPoint) {
+		Long potentialEndPoint = shiftDownLeft(startPoint);
+		while(potentialEndPoint != 0){	
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
 			}
 			potentialEndPoint = shiftDownLeft(potentialEndPoint);
 		}
-		potentialEndPoint = getLongFromCoordinate(coordinate);
-		while(potentialEndPoint != 0){
-			if((potentialEndPoint & pieces[color]) == potentialEndPoint){
-				endPoints.add(getCoordinate(potentialEndPoint));
-				break;
-			}
-			potentialEndPoint = shiftDown(potentialEndPoint);
-		}
-		potentialEndPoint = getLongFromCoordinate(coordinate);
-		while(potentialEndPoint != 0){
-			if((potentialEndPoint & pieces[color]) == potentialEndPoint){
-				endPoints.add(getCoordinate(potentialEndPoint));
-				break;
+		return new ArrayList<Coordinate>();
+	}
+
+	private ArrayList<Coordinate> getEndPointRight(int color,Long startPoint) {
+		Long potentialEndPoint = shiftRight(startPoint);
+		while(potentialEndPoint != 0){	
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
 			}
 			potentialEndPoint = shiftRight(potentialEndPoint);
 		}
-		return endPoints;
+		return new ArrayList<Coordinate>();
+	}
+
+	private ArrayList<Coordinate> getEndPointUpLeft(int color,Long startPoint) {
+		Long potentialEndPoint = shiftUpLeft(startPoint);
+		while(potentialEndPoint != 0){	
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
+			}
+			potentialEndPoint = shiftUpLeft(potentialEndPoint);
+		}
+		return new ArrayList<Coordinate>();
+	}
+
+	private ArrayList<Coordinate> getEndPointLeft(int color,Long startPoint) {
+ 		Long potentialEndPoint = shiftLeft(startPoint);
+		while(potentialEndPoint != 0){	
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
+			}
+			potentialEndPoint = shiftLeft(potentialEndPoint);
+		}
+		return new ArrayList<Coordinate>();
+	}
+
+	private ArrayList<Coordinate> getEndPointUp(int color, Long startPoint) {
+ 		Long potentialEndPoint = shiftUp(startPoint);
+		while(potentialEndPoint != 0){	
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
+			}
+			potentialEndPoint = shiftUp(potentialEndPoint);
+		}
+		return new ArrayList<Coordinate>();
+	}
+
+	private ArrayList<Coordinate> getEndPointDown(int color, Long startPoint) {
+ 		Long potentialEndPoint = shiftDown(startPoint);
+		while(potentialEndPoint != 0){	
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
+			}
+			potentialEndPoint = shiftDown(potentialEndPoint);
+		}
+		return new ArrayList<Coordinate>();
+	}
+
+	private ArrayList<Coordinate> getEndPointUpRight(int color, Long startPoint) {
+ 		Long potentialEndPoint = shiftUpRight(startPoint);
+		while(potentialEndPoint != 0){
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
+			}
+			potentialEndPoint = shiftUpRight(potentialEndPoint);
+		}
+		return new ArrayList<Coordinate>();
+	}
+
+	private ArrayList<Coordinate> longToCoordinateList(Long l) {
+		ArrayList<Coordinate> coordinateList = new ArrayList<Coordinate>();
+		coordinateList.add(getCoordinate(l));
+		return coordinateList;
 	}
 
 	private boolean isLegalMove(int color, Coordinate coordinate) {
@@ -133,7 +196,13 @@ public class Bitboard {
 	}
 
 	public Bitboard(Long blackPieces, Long whitePieces){
-		pieces = new Long[]{blackPieces, whitePieces};
+		this(new Long[]{blackPieces, whitePieces});
+	}
+	
+	public Bitboard(Long[] pieces){
+		if(pieces.length != 2)
+			throw new IllegalArgumentException("Number of players must be 2 but was " + pieces.length);
+		this.pieces = pieces;
 	}
 
 	private void setPieceAtPosition(int color, Long position){
@@ -183,7 +252,7 @@ public class Bitboard {
 	
 	private String combineBoards(String white, String black) {
 		StringBuilder s = new StringBuilder(white.length());
-		for(int i = 0; i < white.length(); i++)
+		for(int i = 0; i < white.length() && i < black.length(); i++)
 			if(white.charAt(i)==' ')
 				s.append(' ');
 			else if(white.charAt(i)=='1' && black.charAt(i)=='1')
@@ -237,15 +306,13 @@ public class Bitboard {
 		int counter = 0;
 		while(theCoordinate == null && counter < 64){
 			if(L.equals(position)){
-				theCoordinate = new Coordinate(counter % 8, counter / 8);
-				break;
+				return  new Coordinate((7 - (counter % 8)), counter / 8);
 			}
 			L = L << 1;
 			counter++;
 		}
-		if(theCoordinate == null)
-			throw new InvalidParameterException("Long " + position + "does not map to a coordinate on the BitBoard");
-		return theCoordinate;	
+		// If the long does not map to a coordinate on the board.
+		throw new IllegalArgumentException("Long " + position + "does not map to a coordinate on the BitBoard");
 	}
 
 
@@ -286,6 +353,7 @@ public class Bitboard {
 		for(int i = 0; i < binString.length(); i++){
 			s.append(binString.charAt(i) + " ");
 		}
+
 		return s.toString();
 	}
 	
@@ -400,18 +468,18 @@ public class Bitboard {
 	}
 	
 	private Long shiftDownLeft(Long position){
-		Long rShift = position >> 7;
-		return new Long(rShift & ~RIGHT_MASK);
+		Long dlShift = position >> 7;
+		return new Long(dlShift & ~RIGHT_MASK);
 	}
 	
 	private Long shiftDownRight(Long position){
-		Long rShift = position >> 9;
-		return new Long(rShift & ~LEFT_MASK);
+		Long drShift = position >> 9;
+		return new Long(drShift & ~LEFT_MASK);
 	}
 	
 	private Long shiftLeft(Long position){
-		Long rShift = position << 1;
-		return new Long(rShift & ~RIGHT_MASK);
+		Long lShift = position << 1;
+		return new Long(lShift & ~RIGHT_MASK);
 	}
 	
 	private Long shiftRight(Long position){
@@ -420,42 +488,32 @@ public class Bitboard {
 	}
 	
 	private Long shiftUp(Long position){
-		Long shifted = new Long(position);
 		return new Long(position << 8);
 	}
 	
 	private Long shiftUpLeft(Long position){
-		Long rShift = position << 9;
-		return new Long(rShift & ~RIGHT_MASK);
+		Long ulShift = position << 9;
+		return new Long(ulShift & ~RIGHT_MASK);
 	}
 
 	private Long shiftUpRight(Long position){
-		Long rShift = position << 7;
-		return new Long(rShift & ~LEFT_MASK);
+		Long urShift = position << 7;
+		return new Long(urShift & ~LEFT_MASK);
 	}
 	
 	
-	private Long getLongFromCoordinate(Coordinate c){
-		int x = c.getX();
-		int y = c.getY();
-		int position = x + (8 * y);
-		return 1L << position;
-	}
+	private Long getLong(Coordinate c){
+		long l = 1L;
+		l = l << 7 - c.getX();
+		l = l << (8*c.getY());
+		return l;
+	}	
 	
-	private Coordinate getCoordinateFromLong(Long position){
-		Coordinate theCoordinate = null;
-		Long L = 1L;
-		int counter = 0;
-		while(theCoordinate == null && counter < 64){
-			if(L.equals(position)){
-				theCoordinate = new Coordinate(counter % 8, counter / 8);
-				break;
-			}
-			L = L << 1;
-			counter++;
-		}
-		if(theCoordinate == null)
-			throw new InvalidParameterException("Long " + position + "does not map to a coordinate on the BitBoard");
-		return theCoordinate;	
+	public boolean isGameComplete(){
+		return !hasLegalMoves(BLACK) && !hasLegalMoves(WHITE);
+	}
+
+	public boolean hasLegalMoves(int color) {
+		return getLegalMoves(color).size() > 0;
 	}
 }
