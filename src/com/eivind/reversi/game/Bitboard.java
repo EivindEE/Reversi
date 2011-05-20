@@ -12,8 +12,8 @@ import java.util.Collection;
 public class Bitboard {
 	
 	public final static int BLACK = 0;
-	public final static int WHITE = 1;
 	public final static int EMPTY = -1;
+	public final static int WHITE = 1;
 	
 	private final static Long INITIAL_POSITION_BLACK = 68853694464L;
 	private final static Long INITIAL_POSITION_WHITE = 34628173824L;
@@ -32,8 +32,11 @@ public class Bitboard {
 		Coordinate f4 = new Coordinate(5, 3);
 		Coordinate b6 = new Coordinate(1, 5);
 		System.out.println(board);
+		System.out.println("Is tile empty " + board.isEmpty(e6));
 		board.makeMove(BLACK, e6);
+		System.out.println("Is tile empty " + board.isEmpty(e6));
 		System.out.println(board);
+		System.out.println("Is tile empty " + board.isEmpty(d6));
 		board.makeMove(WHITE, d6);
 		System.out.println(board);
 		board.makeMove(BLACK, c4);
@@ -50,20 +53,212 @@ public class Bitboard {
 		System.out.println(board);
 	}
 	
-	private void makeMove(int color, Coordinate coordinate) {
+	private Long[] pieces;
 
-		if(isLegalMove(color, coordinate)){
-			ArrayList<Coordinate> piecesToTurn = new ArrayList<Coordinate>();
-			piecesToTurn.add(coordinate);
-			ArrayList<Coordinate> endPoints = getEndPoints(color, coordinate);
-			piecesToTurn.addAll(endPoints);
-			for(Coordinate c : endPoints)
-				piecesToTurn.addAll(coordinate.between(c));
-			for(Coordinate c : piecesToTurn){
-				setPieceAtPosition(color, getLong(c));
-			}
-		}
+	/**
+	 * Constructs a board with pieces in the starting positions of reversi
+	 */
+	public Bitboard(){
+		this(INITIAL_POSITION_BLACK, INITIAL_POSITION_WHITE);
+	}
+
+	/**
+	 * Constructs a board with pieces in the positions given by blackPieces and whitePieces
+	 */
+	public Bitboard(Long blackPieces, Long whitePieces){
+		this(new Long[]{blackPieces, whitePieces});
+	}
+	/**
+	 * Constructs a board with pieces in the positions given by the array
+	 */
+	public Bitboard(Long[] pieces){
+		if(pieces.length != 2)
+			throw new IllegalArgumentException("Number of players must be 2 but was " + pieces.length);
+		this.pieces = pieces;
+	}
+
+	/**
+	 * @return the blackPieces
+	 */
+	public Long blackPieces() {
+		return pieces[BLACK];
+	}
+	
+	/**
+	 * Returns true if the player with the given index has legal moves
+	 * Should be called with either the static BLACK or WHITE
+	 * @param color
+	 * @return
+	 */
+	public boolean hasLegalMoves(int color) {
+		return getLegalMoves(color).size() > 0;
+	}
+	
+	/**
+	 * Returns true if the tile at c is empty
+	 * @param c
+	 * @return
+	 */
+	public boolean isEmpty(Coordinate c){
+		Long position = getLong(c);
+		return (position & emptyBoard()) == position;
+	}
+	/**
+	 * Returns true if none of the players have legal moves
+	 * @return
+	 */
+	public boolean isGameComplete(){
+		return !hasLegalMoves(BLACK) && !hasLegalMoves(WHITE);
+	}
+
+	/**
+	 * @param blackPieces the blackPieces to set
+	 */
+	public void setBlackPieces(Long blackPieces) {
+		this.pieces[BLACK] = blackPieces;
+	}
+
+	/**
+	 * @param whitePieces the whitePieces to set
+	 */
+	public void setWhitePieces(Long whitePieces) {
+		this.pieces[WHITE] = whitePieces;
+	}
+
+	public String toString(){
+		String s;
+		String white = longToString(whitePieces());
+		String black = longToString(blackPieces());
+		String both = combineBoards(white, black);
+		s = displaySideBySide(white, black, both);
+		return s;
+	}
+
+	/**
+	 * @return the whitePieces
+	 */
+	public Long whitePieces() {
+		return pieces[WHITE];
+	}
+
+	private String combineBoards(String white, String black) {
+		StringBuilder s = new StringBuilder(white.length());
+		for(int i = 0; i < white.length() && i < black.length(); i++)
+			if(white.charAt(i)==' ')
+				s.append(' ');
+			else if(white.charAt(i)=='1' && black.charAt(i)=='1')
+				s.append('X');
+			else if(white.charAt(i)=='1')
+				s.append('w');
+			else if(black.charAt(i)=='1')
+				s.append('b');
+			else
+				s.append('.');
 		
+		return s.toString();
+	}
+
+	private String displaySideBySide(String white, String black, String both) {
+		String s = "";
+		int lineLength = 16;
+		int beginIndex = 0;
+		int endIndex = lineLength;
+		while(endIndex <= black.length() || endIndex <= white.length()){
+			s += white.substring(beginIndex, endIndex) + '\t' 
+			  + black.substring(beginIndex, endIndex)+ '\t' 
+			  + both.substring(beginIndex, endIndex) + '\n';
+			beginIndex = endIndex;
+			endIndex += lineLength;
+		}
+		return s;
+	}
+	
+	private Long emptyBoard() {
+		return new Long(~blackPieces() & ~whitePieces());
+	}
+
+	private String formatSingleLong(Long l){
+		String boardString = longToString(l);
+		String s = "";
+		int lineLength = 16;
+		int beginIndex = 0;
+		int endIndex = lineLength;
+		while(endIndex <= boardString.length()){
+			s += boardString.substring(beginIndex, endIndex) + '\n';
+			beginIndex = endIndex;
+			endIndex += lineLength;
+		}
+		return s; 
+	}
+	
+	private Coordinate getCoordinate(Long position){
+		Coordinate theCoordinate = null;
+		Long L = 1L;
+		int counter = 0;
+		while(theCoordinate == null && counter < 64){
+			if(L.equals(position)){
+				return  new Coordinate((7 - (counter % 8)), counter / 8);
+			}
+			L = L << 1;
+			counter++;
+		}
+		// If the long does not map to a coordinate on the board.
+		throw new IllegalArgumentException("Long " + position + "does not map to a coordinate on the BitBoard");
+	}
+
+	private ArrayList<Coordinate> getEndPointDown(int color, Long startPoint) {
+ 		Long potentialEndPoint = shiftDown(startPoint);
+		while(potentialEndPoint != 0){	
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
+			}
+			potentialEndPoint = shiftDown(potentialEndPoint);
+		}
+		return new ArrayList<Coordinate>();
+	}
+
+	private ArrayList<Coordinate> getEndPointDownLeft(int color,Long startPoint) {
+		Long potentialEndPoint = shiftDownLeft(startPoint);
+		while(potentialEndPoint != 0){	
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
+			}
+			potentialEndPoint = shiftDownLeft(potentialEndPoint);
+		}
+		return new ArrayList<Coordinate>();
+	}
+	
+	private ArrayList<Coordinate> getEndPointDownRight(int color,Long startPoint) {
+		Long potentialEndPoint = shiftDownRight(startPoint);
+		while(potentialEndPoint != 0){	
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
+			}
+			potentialEndPoint = shiftDownRight(potentialEndPoint);
+		}
+		return new ArrayList<Coordinate>();
+	}
+
+	private ArrayList<Coordinate> getEndPointLeft(int color,Long startPoint) {
+ 		Long potentialEndPoint = shiftLeft(startPoint);
+		while(potentialEndPoint != 0){	
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
+			}
+			potentialEndPoint = shiftLeft(potentialEndPoint);
+		}
+		return new ArrayList<Coordinate>();
+	}
+	
+	private ArrayList<Coordinate> getEndPointRight(int color,Long startPoint) {
+		Long potentialEndPoint = shiftRight(startPoint);
+		while(potentialEndPoint != 0){	
+			if(validEndPoint(color,potentialEndPoint)){
+				return longToCoordinateList(potentialEndPoint);
+			}
+			potentialEndPoint = shiftRight(potentialEndPoint);
+		}
+		return new ArrayList<Coordinate>();
 	}
 
 	private ArrayList<Coordinate> getEndPoints(int color, Coordinate coordinate) {
@@ -82,66 +277,6 @@ public class Bitboard {
 
 		return endPoints;
 	}
-
-	private ArrayList<Coordinate> getEndPointDownRight(int color,Long startPoint) {
-		Long potentialEndPoint = shiftDownRight(startPoint);
-		while(potentialEndPoint != 0){	
-			if(validEndPoint(color,potentialEndPoint)){
-				return longToCoordinateList(potentialEndPoint);
-			}
-			potentialEndPoint = shiftDownRight(potentialEndPoint);
-		}
-		return new ArrayList<Coordinate>();
-	}
-
-	private boolean validEndPoint(int color, Long potentialEndPoint) {
-		return (potentialEndPoint & pieces[color]) == potentialEndPoint;
-	}
-
-	private ArrayList<Coordinate> getEndPointDownLeft(int color,Long startPoint) {
-		Long potentialEndPoint = shiftDownLeft(startPoint);
-		while(potentialEndPoint != 0){	
-			if(validEndPoint(color,potentialEndPoint)){
-				return longToCoordinateList(potentialEndPoint);
-			}
-			potentialEndPoint = shiftDownLeft(potentialEndPoint);
-		}
-		return new ArrayList<Coordinate>();
-	}
-
-	private ArrayList<Coordinate> getEndPointRight(int color,Long startPoint) {
-		Long potentialEndPoint = shiftRight(startPoint);
-		while(potentialEndPoint != 0){	
-			if(validEndPoint(color,potentialEndPoint)){
-				return longToCoordinateList(potentialEndPoint);
-			}
-			potentialEndPoint = shiftRight(potentialEndPoint);
-		}
-		return new ArrayList<Coordinate>();
-	}
-
-	private ArrayList<Coordinate> getEndPointUpLeft(int color,Long startPoint) {
-		Long potentialEndPoint = shiftUpLeft(startPoint);
-		while(potentialEndPoint != 0){	
-			if(validEndPoint(color,potentialEndPoint)){
-				return longToCoordinateList(potentialEndPoint);
-			}
-			potentialEndPoint = shiftUpLeft(potentialEndPoint);
-		}
-		return new ArrayList<Coordinate>();
-	}
-
-	private ArrayList<Coordinate> getEndPointLeft(int color,Long startPoint) {
- 		Long potentialEndPoint = shiftLeft(startPoint);
-		while(potentialEndPoint != 0){	
-			if(validEndPoint(color,potentialEndPoint)){
-				return longToCoordinateList(potentialEndPoint);
-			}
-			potentialEndPoint = shiftLeft(potentialEndPoint);
-		}
-		return new ArrayList<Coordinate>();
-	}
-
 	private ArrayList<Coordinate> getEndPointUp(int color, Long startPoint) {
  		Long potentialEndPoint = shiftUp(startPoint);
 		while(potentialEndPoint != 0){	
@@ -152,18 +287,17 @@ public class Bitboard {
 		}
 		return new ArrayList<Coordinate>();
 	}
-
-	private ArrayList<Coordinate> getEndPointDown(int color, Long startPoint) {
- 		Long potentialEndPoint = shiftDown(startPoint);
+	
+	private ArrayList<Coordinate> getEndPointUpLeft(int color,Long startPoint) {
+		Long potentialEndPoint = shiftUpLeft(startPoint);
 		while(potentialEndPoint != 0){	
 			if(validEndPoint(color,potentialEndPoint)){
 				return longToCoordinateList(potentialEndPoint);
 			}
-			potentialEndPoint = shiftDown(potentialEndPoint);
+			potentialEndPoint = shiftUpLeft(potentialEndPoint);
 		}
 		return new ArrayList<Coordinate>();
 	}
-
 	private ArrayList<Coordinate> getEndPointUpRight(int color, Long startPoint) {
  		Long potentialEndPoint = shiftUpRight(startPoint);
 		while(potentialEndPoint != 0){
@@ -173,146 +307,6 @@ public class Bitboard {
 			potentialEndPoint = shiftUpRight(potentialEndPoint);
 		}
 		return new ArrayList<Coordinate>();
-	}
-
-	private ArrayList<Coordinate> longToCoordinateList(Long l) {
-		ArrayList<Coordinate> coordinateList = new ArrayList<Coordinate>();
-		coordinateList.add(getCoordinate(l));
-		return coordinateList;
-	}
-
-	private boolean isLegalMove(int color, Coordinate coordinate) {
-		for(Coordinate c : getLegalMoves(color)){
-			if(c.equals(coordinate))
-				return true;
-		}
-		return false;
-	}
-
-	private Long[] pieces;
-	
-	public Bitboard(){
-		this(INITIAL_POSITION_BLACK, INITIAL_POSITION_WHITE);
-	}
-
-	public Bitboard(Long blackPieces, Long whitePieces){
-		this(new Long[]{blackPieces, whitePieces});
-	}
-	
-	public Bitboard(Long[] pieces){
-		if(pieces.length != 2)
-			throw new IllegalArgumentException("Number of players must be 2 but was " + pieces.length);
-		this.pieces = pieces;
-	}
-
-	private void setPieceAtPosition(int color, Long position){
-		this.pieces[1-color] &= ~position; 
-		this.pieces[color] = this.pieces[color] | position; 
-	}
-
-	/**
-	 * @return the blackPieces
-	 */
-	public Long blackPieces() {
-		return pieces[BLACK];
-	}
-	
-	public boolean isEmpty(){
-		return pieces[BLACK] == 0 && pieces[WHITE] == 0;
-	}
-
-	/**
-	 * @param blackPieces the blackPieces to set
-	 */
-	public void setBlackPieces(Long blackPieces) {
-		this.pieces[BLACK] = blackPieces;
-	}
-	
-	/**
-	 * @param whitePieces the whitePieces to set
-	 */
-	public void setWhitePieces(Long whitePieces) {
-		this.pieces[WHITE] = whitePieces;
-	}
-
-	public String toString(){
-		String s;
-		String white = longToString(whitePieces());
-		String black = longToString(blackPieces());
-		String both = combineBoards(white, black);
-		s = displaySideBySide(white, black, both);
-		return s;
-	}
-	/**
-	 * @return the whitePieces
-	 */
-	public Long whitePieces() {
-		return pieces[WHITE];
-	}
-	
-	private String combineBoards(String white, String black) {
-		StringBuilder s = new StringBuilder(white.length());
-		for(int i = 0; i < white.length() && i < black.length(); i++)
-			if(white.charAt(i)==' ')
-				s.append(' ');
-			else if(white.charAt(i)=='1' && black.charAt(i)=='1')
-				s.append('X');
-			else if(white.charAt(i)=='1')
-				s.append('w');
-			else if(black.charAt(i)=='1')
-				s.append('b');
-			else
-				s.append('.');
-		
-		return s.toString();
-	}
-	private String displaySideBySide(String white, String black, String both) {
-		String s = "";
-		int lineLength = 16;
-		int beginIndex = 0;
-		int endIndex = lineLength;
-		while(endIndex <= black.length() || endIndex <= white.length()){
-			s += white.substring(beginIndex, endIndex) + '\t' 
-			  + black.substring(beginIndex, endIndex)+ '\t' 
-			  + both.substring(beginIndex, endIndex) + '\n';
-			beginIndex = endIndex;
-			endIndex += lineLength;
-		}
-		return s;
-	}
-
-
-	private Long emptyBoard() {
-		return new Long(~blackPieces() & ~whitePieces());
-	}
-	
-	private String formatSingleLong(Long l){
-		String boardString = longToString(l);
-		String s = "";
-		int lineLength = 16;
-		int beginIndex = 0;
-		int endIndex = lineLength;
-		while(endIndex <= boardString.length()){
-			s += boardString.substring(beginIndex, endIndex) + '\n';
-			beginIndex = endIndex;
-			endIndex += lineLength;
-		}
-		return s; 
-	}
-
-	private Coordinate getCoordinate(Long position){
-		Coordinate theCoordinate = null;
-		Long L = 1L;
-		int counter = 0;
-		while(theCoordinate == null && counter < 64){
-			if(L.equals(position)){
-				return  new Coordinate((7 - (counter % 8)), counter / 8);
-			}
-			L = L << 1;
-			counter++;
-		}
-		// If the long does not map to a coordinate on the board.
-		throw new IllegalArgumentException("Long " + position + "does not map to a coordinate on the BitBoard");
 	}
 
 
@@ -329,6 +323,14 @@ public class Bitboard {
 		return legalMoves;
 		
 	}
+	
+	private Long getLong(Coordinate c){
+		long l = 1L;
+		l = l << 7 - c.getX();
+		l = l << (8*c.getY());
+		return l;
+	}
+
 	private ArrayList<Coordinate> getLongCoordinates(Long position){
 		Long workingPosition = new Long(position);
 		ArrayList<Coordinate> coordinates = new ArrayList<Coordinate>();
@@ -339,6 +341,20 @@ public class Bitboard {
 			highestOneBit = Long.highestOneBit(workingPosition);
 		}
 		return coordinates;
+	}
+
+
+	private boolean isLegalMove(int color, Coordinate coordinate) {
+		for(Coordinate c : getLegalMoves(color)){
+			if(c.equals(coordinate))
+				return true;
+		}
+		return false;
+	}
+	private ArrayList<Coordinate> longToCoordinateList(Long l) {
+		ArrayList<Coordinate> coordinateList = new ArrayList<Coordinate>();
+		coordinateList.add(getCoordinate(l));
+		return coordinateList;
 	}
 
 	private String longToString(Long l){
@@ -357,6 +373,23 @@ public class Bitboard {
 		return s.toString();
 	}
 	
+	private void makeMove(int color, Coordinate coordinate) {
+
+		if(isLegalMove(color, coordinate)){
+			ArrayList<Coordinate> piecesToTurn = new ArrayList<Coordinate>();
+			piecesToTurn.add(coordinate);
+			ArrayList<Coordinate> endPoints = getEndPoints(color, coordinate);
+			piecesToTurn.addAll(endPoints);
+			for(Coordinate c : endPoints)
+				piecesToTurn.addAll(coordinate.between(c));
+			for(Coordinate c : piecesToTurn){
+				setPieceAtPosition(color, getLong(c));
+			}
+		}
+		
+	}
+
+
 	private ArrayList<Coordinate> movesDown(int player) {
 		ArrayList<Coordinate> downMoves = new ArrayList<Coordinate>(); 
 		int otherPlayer = 1 - player;
@@ -383,7 +416,6 @@ public class Bitboard {
 		}
 		return downLeftMoves;
 	}
-
 
 	private ArrayList<Coordinate> movesDownRight(int player) {
 		ArrayList<Coordinate> downRightMoves = new ArrayList<Coordinate>(); 
@@ -423,7 +455,7 @@ public class Bitboard {
 		}
 		return rightMoves;
 	}
-
+	
 	private ArrayList<Coordinate> movesUp(int player) {
 		ArrayList<Coordinate> upMoves = new ArrayList<Coordinate>(); 
 		int otherPlayer = 1 - player;
@@ -463,6 +495,11 @@ public class Bitboard {
 		return upRightMoves;
 	}
 	
+	private void setPieceAtPosition(int color, Long position){
+		this.pieces[1-color] &= ~position; 
+		this.pieces[color] = this.pieces[color] | position; 
+	}
+	
 	private Long shiftDown(Long position){
 		return new Long(position >> 8);
 	}
@@ -486,34 +523,23 @@ public class Bitboard {
 		Long rShift = position >> 1;
 		return new Long(rShift & ~LEFT_MASK);
 	}
-	
+
 	private Long shiftUp(Long position){
 		return new Long(position << 8);
 	}
 	
+	
 	private Long shiftUpLeft(Long position){
 		Long ulShift = position << 9;
 		return new Long(ulShift & ~RIGHT_MASK);
-	}
-
+	}	
+	
 	private Long shiftUpRight(Long position){
 		Long urShift = position << 7;
 		return new Long(urShift & ~LEFT_MASK);
 	}
-	
-	
-	private Long getLong(Coordinate c){
-		long l = 1L;
-		l = l << 7 - c.getX();
-		l = l << (8*c.getY());
-		return l;
-	}	
-	
-	public boolean isGameComplete(){
-		return !hasLegalMoves(BLACK) && !hasLegalMoves(WHITE);
-	}
 
-	public boolean hasLegalMoves(int color) {
-		return getLegalMoves(color).size() > 0;
+	private boolean validEndPoint(int color, Long potentialEndPoint) {
+		return (potentialEndPoint & pieces[color]) == potentialEndPoint;
 	}
 }
