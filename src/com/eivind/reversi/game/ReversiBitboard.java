@@ -8,11 +8,7 @@ import java.util.List;
  * @author Eivind Eidheim Elseth
  *
  */
-public class ReversiBitboard {
-	
-	public final static int BLACK = 0;
-	public final static int EMPTY = -1;
-	public final static int WHITE = 1;
+public class ReversiBitboard implements ReversiBoard {
 	
 	private final static Long INITIAL_POSITION_BLACK = 68853694464L;
 	private final static Long INITIAL_POSITION_WHITE = 34628173824L;
@@ -21,7 +17,7 @@ public class ReversiBitboard {
 	private final static Long RIGHT_MASK = 72340172838076673L;
 
 	public static void main(String[] args) {
-		ReversiBitboard board = new ReversiBitboard();
+		ReversiBoard board = new ReversiBitboard();
 		Coordinate e5 = new Coordinate(4, 4);
 		Coordinate e4 = new Coordinate(4, 3);
 		Coordinate e3 = new Coordinate(4, 2);
@@ -66,6 +62,7 @@ public class ReversiBitboard {
 			throw new IllegalArgumentException("Illegal move. No such move allowed on position");
 	}
 
+
 	/**
 	 * @return the blackPieces
 	 */
@@ -73,12 +70,10 @@ public class ReversiBitboard {
 		return pieces[BLACK];
 	}
 	
-	/**
-	 * Returns the score of the player with the given color
-	 * Should be called with one of the class constants.
-	 * @param color
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.eivind.reversi.game.ReversiBoard#getScore(int)
 	 */
+	@Override
 	public int getScore(int color){
 		int score = 0;
 		Long remainingPieces = new Long(pieces[color]);
@@ -89,12 +84,10 @@ public class ReversiBitboard {
 		return score;
 	}
 	
-	/**
-	 * Return the int correspondig to the class constant of the content of the tile
-	 * Should be used in conjunction with the class constants
-	 * @param c
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.eivind.reversi.game.ReversiBoard#getTile(com.eivind.reversi.game.Coordinate)
 	 */
+	@Override
 	public int getTile(Coordinate c){
 		Long position = getLong(c);
 		if((position & pieces[BLACK]) == position)
@@ -106,30 +99,27 @@ public class ReversiBitboard {
 		else
 			throw new IllegalArgumentException("Coordinate " + c + "does not appear  on the board");
 	}
-	/**
-	 * Returns true if the player with the given index has legal moves
-	 * Should be called with either the static BLACK or WHITE
-	 * @param color
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.eivind.reversi.game.ReversiBoard#hasLegalMoves(int)
 	 */
+	@Override
 	public boolean hasLegalMoves(int color) {
 		return getLegalMoves(color).size() > 0;
 	}
 
-	/**
-	 * Returns true if the tile at c is empty
-	 * @param c
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.eivind.reversi.game.ReversiBoard#isEmpty(com.eivind.reversi.game.Coordinate)
 	 */
+	@Override
 	public boolean isEmpty(Coordinate c){
 		Long position = getLong(c);
 		return (position & emptyBoard()) == position;
 	}
 
-	/**
-	 * Returns true if none of the players have legal moves
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.eivind.reversi.game.ReversiBoard#isGameComplete()
 	 */
+	@Override
 	public boolean isGameComplete(){
 		return !hasLegalMoves(BLACK) && !hasLegalMoves(WHITE);
 	}
@@ -157,6 +147,10 @@ public class ReversiBitboard {
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.eivind.reversi.game.ReversiBoard#toString()
+	 */
+	@Override
 	public String toString(){
 		String s;
 		String white = longToString(whitePieces());
