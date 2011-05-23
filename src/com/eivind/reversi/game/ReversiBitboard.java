@@ -46,13 +46,24 @@ public class ReversiBitboard {
 	public ReversiBitboard(Long blackPieces, Long whitePieces){
 		this(new Long[]{blackPieces, whitePieces});
 	}
+	
 	/**
 	 * Constructs a board with pieces in the positions given by the array
 	 */
 	public ReversiBitboard(Long[] pieces){
 		if(pieces.length != 2)
 			throw new IllegalArgumentException("Number of players must be 2 but was " + pieces.length);
-		this.pieces = pieces;
+		this.pieces = new Long[]{new Long(pieces[0]), new Long(pieces[1]) };
+	}
+	
+	/**
+	 * Constructs a board with pieces in the positions given by the array
+	 */
+	public ReversiBitboard(Long[] pieces, Move move){
+		this(pieces);
+		
+		if(!makeMove(move.player().getColor(), move.move()))
+			throw new IllegalArgumentException("Illegal move. No such move allowed on position");
 	}
 
 	/**
@@ -60,20 +71,6 @@ public class ReversiBitboard {
 	 */
 	private Long blackPieces() {
 		return pieces[BLACK];
-	}
-	
-	public String formatSingleLong(Long l){
-		String boardString = longToString(l);
-		String s = "";
-		int lineLength = 16;
-		int beginIndex = 0;
-		int endIndex = lineLength;
-		while(endIndex <= boardString.length()){
-			s += boardString.substring(beginIndex, endIndex) + '\n';
-			beginIndex = endIndex;
-			endIndex += lineLength;
-		}
-		return s; 
 	}
 	
 	/**
@@ -144,7 +141,7 @@ public class ReversiBitboard {
 	 * @param coordinate
 	 * @return
 	 */
-	public boolean makeMove(int color, Coordinate coordinate) {
+	private boolean makeMove(int color, Coordinate coordinate) {
 		if(isLegalMove(color, coordinate)){
 			List<Coordinate> piecesToTurn = new LinkedList<Coordinate>();
 			piecesToTurn.add(coordinate);
