@@ -22,5 +22,9 @@ public class Move {
 	public Coordinate move(){
 		return move;
 	}
+	
+	public String toString(){
+		return "[" + player.toString() + ", " + move.toString() + "]";
+	}
 
 }
