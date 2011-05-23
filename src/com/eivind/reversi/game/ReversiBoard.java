@@ -1,5 +1,7 @@
 package com.eivind.reversi.game;
 
+import java.util.List;
+
 public interface ReversiBoard {
 
 	public final static int BLACK = 0;
@@ -46,6 +48,18 @@ public interface ReversiBoard {
 	 */
 	public boolean isGameComplete();
 
+	/**
+	 * Returns a list of all the coordinates the given player can legally place a piece 
+	 * 
+	 * @param player
+	 * @return
+	 */
+	public List<Coordinate> getLegalMoves(int player);
+	
+	/**
+	 * Returns a string representation of the ReversiBoard
+	 * @return
+	 */
 	public String toString();
 
 }

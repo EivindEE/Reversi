@@ -15,17 +15,6 @@ public class ReversiBitboard implements ReversiBoard {
 	
 	private final static Long LEFT_MASK = -9187201950435737472L;
 	private final static Long RIGHT_MASK = 72340172838076673L;
-
-	public static void main(String[] args) {
-		ReversiBoard board = new ReversiBitboard();
-		Coordinate e5 = new Coordinate(4, 4);
-		Coordinate e4 = new Coordinate(4, 3);
-		Coordinate e3 = new Coordinate(4, 2);
-		System.out.print("E5 is white: " + (board.getTile(e5) == WHITE) + ", E4 is black: " + (board.getTile(e4) == BLACK)
-				+ ", E3 is empty: " + (board.getTile(e3) == EMPTY) + '\n');
-		System.out.println(board);
-	}
-	
 	
 	private Long[] pieces;
 
@@ -63,11 +52,22 @@ public class ReversiBitboard implements ReversiBoard {
 	}
 
 
-	/**
-	 * @return the blackPieces
-	 */
-	private Long blackPieces() {
-		return pieces[BLACK];
+	public ReversiBitboard(ReversiBitboard board, Move m) {
+		this(board.pieces, m);
+	}
+
+	public List<Coordinate> getLegalMoves(int player) {
+		List<Coordinate> legalMoves = new LinkedList<Coordinate>();
+		legalMoves.addAll(movesUpLeft(player));
+		legalMoves.addAll(movesUp(player));
+		legalMoves.addAll(movesUpRight(player));
+		legalMoves.addAll(movesLeft(player));
+		legalMoves.addAll(movesRight(player));
+		legalMoves.addAll(movesDownLeft(player));
+		legalMoves.addAll(movesDown(player));
+		legalMoves.addAll(movesDownRight(player));
+		return legalMoves;
+		
 	}
 	
 	/* (non-Javadoc)
@@ -124,29 +124,6 @@ public class ReversiBitboard implements ReversiBoard {
 		return !hasLegalMoves(BLACK) && !hasLegalMoves(WHITE);
 	}
 	
-	/**
-	 * Places a piece at coordinate, and turns appropriate pieces.
-	 * Returns true iff move is legal and completed.
-	 * @param color
-	 * @param coordinate
-	 * @return
-	 */
-	private boolean makeMove(int color, Coordinate coordinate) {
-		if(isLegalMove(color, coordinate)){
-			List<Coordinate> piecesToTurn = new LinkedList<Coordinate>();
-			piecesToTurn.add(coordinate);
-			List<Coordinate> endPoints = getEndPoints(color, coordinate);
-			piecesToTurn.addAll(endPoints);
-			for(Coordinate c : endPoints)
-				piecesToTurn.addAll(coordinate.between(c));
-			for(Coordinate c : piecesToTurn){
-				setPieceAtPosition(color, getLong(c));
-			}
-			return true;
-		}	
-		return false;
-	}
-
 	/* (non-Javadoc)
 	 * @see com.eivind.reversi.game.ReversiBoard#toString()
 	 */
@@ -161,13 +138,12 @@ public class ReversiBitboard implements ReversiBoard {
 	}
 
 	/**
-	 * @return the whitePieces
+	 * @return the blackPieces
 	 */
-	private Long whitePieces() {
-		return pieces[WHITE];
+	private Long blackPieces() {
+		return pieces[BLACK];
 	}
-	
-	
+
 	/**
 	 * 
 	 * @param white
@@ -191,7 +167,8 @@ public class ReversiBitboard implements ReversiBoard {
 		
 		return s.toString();
 	}
-
+	
+	
 	private String displaySideBySide(String white, String black, String both) {
 		String s = "";
 		int lineLength = 16;
@@ -206,11 +183,11 @@ public class ReversiBitboard implements ReversiBoard {
 		}
 		return s;
 	}
-	
+
 	private Long emptyBoard() {
 		return new Long(~blackPieces() & ~whitePieces());
 	}
-
+	
 	private Coordinate getCoordinate(Long position){
 		Coordinate theCoordinate = null;
 		Long L = 1L;
@@ -236,7 +213,7 @@ public class ReversiBitboard implements ReversiBoard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-	
+
 	private List<Coordinate> getEndPointDownLeft(int color,Long startPoint) {
 		Long potentialEndPoint = shiftDownLeft(startPoint);
 		while(potentialEndPoint != 0){	
@@ -247,7 +224,7 @@ public class ReversiBitboard implements ReversiBoard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-
+	
 	private List<Coordinate> getEndPointDownRight(int color,Long startPoint) {
 		Long potentialEndPoint = shiftDownRight(startPoint);
 		while(potentialEndPoint != 0){	
@@ -258,7 +235,7 @@ public class ReversiBitboard implements ReversiBoard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-	
+
 	private List<Coordinate> getEndPointLeft(int color,Long startPoint) {
  		Long potentialEndPoint = shiftLeft(startPoint);
 		while(potentialEndPoint != 0){	
@@ -269,7 +246,7 @@ public class ReversiBitboard implements ReversiBoard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-
+	
 	private List<Coordinate> getEndPointRight(int color,Long startPoint) {
 		Long potentialEndPoint = shiftRight(startPoint);
 		while(potentialEndPoint != 0){	
@@ -280,6 +257,7 @@ public class ReversiBitboard implements ReversiBoard {
 		}
 		return new LinkedList<Coordinate>();
 	}
+
 	private List<Coordinate> getEndPoints(int color, Coordinate coordinate) {
 		List<Coordinate> endPoints = new LinkedList<Coordinate>();
 		Long startPoint = getLong(coordinate);
@@ -296,7 +274,6 @@ public class ReversiBitboard implements ReversiBoard {
 
 		return endPoints;
 	}
-	
 	private List<Coordinate> getEndPointUp(int color, Long startPoint) {
  		Long potentialEndPoint = shiftUp(startPoint);
 		while(potentialEndPoint != 0){	
@@ -307,6 +284,7 @@ public class ReversiBitboard implements ReversiBoard {
 		}
 		return new LinkedList<Coordinate>();
 	}
+	
 	private List<Coordinate> getEndPointUpLeft(int color,Long startPoint) {
 		Long potentialEndPoint = shiftUpLeft(startPoint);
 		while(potentialEndPoint != 0){	
@@ -317,8 +295,6 @@ public class ReversiBitboard implements ReversiBoard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-
-
 	private List<Coordinate> getEndPointUpRight(int color, Long startPoint) {
  		Long potentialEndPoint = shiftUpRight(startPoint);
 		while(potentialEndPoint != 0){
@@ -329,20 +305,7 @@ public class ReversiBitboard implements ReversiBoard {
 		}
 		return new LinkedList<Coordinate>();
 	}
-	
-	private List<Coordinate> getLegalMoves(int player) {
-		List<Coordinate> legalMoves = new LinkedList<Coordinate>();
-		legalMoves.addAll(movesUpLeft(player));
-		legalMoves.addAll(movesUp(player));
-		legalMoves.addAll(movesUpRight(player));
-		legalMoves.addAll(movesLeft(player));
-		legalMoves.addAll(movesRight(player));
-		legalMoves.addAll(movesDownLeft(player));
-		legalMoves.addAll(movesDown(player));
-		legalMoves.addAll(movesDownRight(player));
-		return legalMoves;
-		
-	}
+
 
 	private Long getLong(Coordinate c){
 		long l = 1L;
@@ -350,8 +313,7 @@ public class ReversiBitboard implements ReversiBoard {
 		l = l << (8*c.getY());
 		return l;
 	}
-
-
+	
 	private List<Coordinate> getLongCoordinates(Long position){
 		Long workingPosition = new Long(position);
 		List<Coordinate> coordinates = new LinkedList<Coordinate>();
@@ -363,6 +325,7 @@ public class ReversiBitboard implements ReversiBoard {
 		}
 		return coordinates;
 	}
+
 	private boolean isLegalMove(int color, Coordinate coordinate) {
 		for(Coordinate c : getLegalMoves(color)){
 			if(c.equals(coordinate))
@@ -371,12 +334,12 @@ public class ReversiBitboard implements ReversiBoard {
 		return false;
 	}
 
+
 	private List<Coordinate> longToCoordinateList(Long l) {
 		List<Coordinate> coordinateList = new LinkedList<Coordinate>();
 		coordinateList.add(getCoordinate(l));
 		return coordinateList;
 	}
-	
 	private String longToString(Long l){
 		StringBuilder s = new StringBuilder(128);
 		int leadingZeros = Long.numberOfLeadingZeros(l);
@@ -392,7 +355,29 @@ public class ReversiBitboard implements ReversiBoard {
 		return s.toString();
 	}
 
-
+	/**
+	 * Places a piece at coordinate, and turns appropriate pieces.
+	 * Returns true iff move is legal and completed.
+	 * @param color
+	 * @param coordinate
+	 * @return
+	 */
+	private boolean makeMove(int color, Coordinate coordinate) {
+		if(isLegalMove(color, coordinate)){
+			List<Coordinate> piecesToTurn = new LinkedList<Coordinate>();
+			piecesToTurn.add(coordinate);
+			List<Coordinate> endPoints = getEndPoints(color, coordinate);
+			piecesToTurn.addAll(endPoints);
+			for(Coordinate c : endPoints)
+				piecesToTurn.addAll(coordinate.between(c));
+			for(Coordinate c : piecesToTurn){
+				setPieceAtPosition(color, getLong(c));
+			}
+			return true;
+		}	
+		return false;
+	}
+	
 	private List<Coordinate> movesDown(int player) {
 		List<Coordinate> downMoves = new LinkedList<Coordinate>(); 
 		int otherPlayer = 1 - player;
@@ -419,6 +404,7 @@ public class ReversiBitboard implements ReversiBoard {
 		}
 		return downLeftMoves;
 	}
+
 
 	private List<Coordinate> movesDownRight(int player) {
 		LinkedList<Coordinate> downRightMoves = new LinkedList<Coordinate>(); 
@@ -458,7 +444,7 @@ public class ReversiBitboard implements ReversiBoard {
 		}
 		return rightMoves;
 	}
-	
+
 	private List<Coordinate> movesUp(int player) {
 		List<Coordinate> upMoves = new LinkedList<Coordinate>(); 
 		int otherPlayer = 1 - player;
@@ -526,23 +512,30 @@ public class ReversiBitboard implements ReversiBoard {
 		Long rShift = position >> 1;
 		return new Long(rShift & ~LEFT_MASK);
 	}
-
+	
 	private Long shiftUp(Long position){
 		return new Long(position << 8);
 	}
-	
-	
+
 	private Long shiftUpLeft(Long position){
 		Long ulShift = position << 9;
 		return new Long(ulShift & ~RIGHT_MASK);
-	}	
+	}
+	
 	
 	private Long shiftUpRight(Long position){
 		Long urShift = position << 7;
 		return new Long(urShift & ~LEFT_MASK);
-	}
-
+	}	
+	
 	private boolean validEndPoint(int color, Long potentialEndPoint) {
 		return (potentialEndPoint & pieces[color]) == potentialEndPoint;
+	}
+
+	/**
+	 * @return the whitePieces
+	 */
+	private Long whitePieces() {
+		return pieces[WHITE];
 	}
 }
