@@ -46,7 +46,10 @@ public class ReversiGame {
 		if(!stateChanged)
 			throw new IllegalArgumentException("That state is not reachable from the current state");
 	}
-
+	
+	/**
+	 * Returns a string representation of the game
+	 */
 	public String toString(){
 		return this.currentState.toString();
 	}

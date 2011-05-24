@@ -100,7 +100,7 @@ public class ReversiState {
 			playerToMoveString = "BLACK";
 		if(playerToMove == 1 )
 			playerToMoveString = "WHITE";
-		return "Player to move" + playerToMoveString + '\n' + board; 
+		return "Player to move " + playerToMoveString + '\n' + board; 
 	}
 	
 	/**
