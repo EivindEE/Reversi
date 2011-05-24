@@ -216,10 +216,11 @@ public class ReversiBitboard implements ReversiBoard {
 
 	private List<Coordinate> getEndPointDownLeft(int color,Long startPoint) {
 		Long potentialEndPoint = shiftDownLeft(startPoint);
+		
 		while(potentialEndPoint != 0){	
 			if(validEndPoint(color,potentialEndPoint)){
 				return longToCoordinateList(potentialEndPoint);
-			}
+			}		
 			potentialEndPoint = shiftDownLeft(potentialEndPoint);
 		}
 		return new LinkedList<Coordinate>();
@@ -490,16 +491,16 @@ public class ReversiBitboard implements ReversiBoard {
 	}
 	
 	private Long shiftDown(Long position){
-		return new Long(position >> 8);
+		return new Long(position >>> 8);
 	}
 	
 	private Long shiftDownLeft(Long position){
-		Long dlShift = position >> 7;
+		Long dlShift = position >>> 7;
 		return new Long(dlShift & ~RIGHT_MASK);
 	}
 	
 	private Long shiftDownRight(Long position){
-		Long drShift = position >> 9;
+		Long drShift = position >>> 9;
 		return new Long(drShift & ~LEFT_MASK);
 	}
 	
@@ -509,7 +510,7 @@ public class ReversiBitboard implements ReversiBoard {
 	}
 	
 	private Long shiftRight(Long position){
-		Long rShift = position >> 1;
+		Long rShift = position >>> 1;
 		return new Long(rShift & ~LEFT_MASK);
 	}
 	
@@ -524,7 +525,7 @@ public class ReversiBitboard implements ReversiBoard {
 	
 	
 	private Long shiftUpRight(Long position){
-		Long urShift = position << 7;
+		Long urShift = position << 7L;
 		return new Long(urShift & ~LEFT_MASK);
 	}	
 	
@@ -538,4 +539,5 @@ public class ReversiBitboard implements ReversiBoard {
 	private Long whitePieces() {
 		return pieces[WHITE];
 	}
+	
 }
