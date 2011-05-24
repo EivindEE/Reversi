@@ -101,5 +101,4 @@ public class ReversiState {
 			playerToMoveString = "WHITE";
 		return "Player to move" + playerToMoveString + '\n' + board; 
 	}
-
 }
