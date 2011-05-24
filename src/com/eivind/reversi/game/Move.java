@@ -7,15 +7,19 @@ package com.eivind.reversi.game;
  *
  */
 public class Move {
-	private Player player;
+	/**
+	 * Index of the player to move
+	 */
+	private int player;
 	private Coordinate move;
 	
-	public Move(Player player, Coordinate move){
+	public Move(int player, Coordinate move){
 		this.player = player;
 		this.move = move;
 	}
 	
-	public Player player(){
+	
+	public int player(){
 		return player;
 	}
 	
@@ -24,7 +28,12 @@ public class Move {
 	}
 	
 	public String toString(){
-		return "[" + player.toString() + ", " + move.toString() + "]";
+		String color = "";
+		if(player == 0)
+			color = "BLACK";
+		if(player == 1)
+			color = "WHITE";
+		return "[" + color + ", " + move.toString() + "]";
 	}
 
 }

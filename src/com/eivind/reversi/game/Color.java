@@ -1,13 +1,13 @@
 package com.eivind.reversi.game;
 
 public enum Color {
-	BLACK(0), WHITE(1);
-	private int color;
-	private Color(int color){
+	BLACK((byte)0), WHITE((byte)1);
+	private byte color;
+	private Color(byte color){
 		this.color = color;
 	}
 	
-	public int color(){
+	public byte color(){
 		return this.color;
 	}
 }

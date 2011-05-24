@@ -47,7 +47,7 @@ public class ReversiBitboard implements ReversiBoard {
 	public ReversiBitboard(Long[] pieces, Move move){
 		this(pieces);
 		
-		if(!makeMove(move.player().getColor(), move.move()))
+		if(!makeMove(move.player(), move.move()))
 			throw new IllegalArgumentException("Illegal move. No such move allowed on position");
 	}
 
