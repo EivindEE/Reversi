@@ -4,7 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Class
+ * Represents a state in a reversi game.
+ * Holds the player to move, the board, and possible successor states.
  * @author Eivind Eidheim Elseth
  *
  */
@@ -100,5 +101,19 @@ public class ReversiState {
 		if(playerToMove == 1 )
 			playerToMoveString = "WHITE";
 		return "Player to move" + playerToMoveString + '\n' + board; 
+	}
+	
+	/**
+	 * Two states are equal if they have equal boards, and the same player to move
+	 */
+	@Override
+	public boolean equals(Object obj){
+		if(obj instanceof ReversiState){
+			ReversiState s = (ReversiState) obj;
+			if(s.board.equals(board) && s.playerToMove == this.playerToMove)
+				return true;
+		}
+		return false;
+			
 	}
 }

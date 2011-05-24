@@ -540,4 +540,18 @@ public class ReversiBitboard implements ReversiBoard {
 		return pieces[WHITE];
 	}
 	
+	/**
+	 * Two boards are equal if they have the same pieces at the same places.
+	 */
+	@Override
+	public boolean equals(Object obj){
+		if(obj instanceof ReversiBitboard){
+			ReversiBitboard b = (ReversiBitboard) obj;
+			if(b.pieces[0] == this.pieces[0] && b.pieces[1] == this.pieces[1])
+				return true;
+				
+		}
+			
+		return false;
+	}
 }
