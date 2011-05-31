@@ -114,6 +114,9 @@ public class ReversiState {
 				return true;
 		}
 		return false;
-			
+	}
+	
+	public ReversiBoard board(){
+		return this.board;
 	}
 }
